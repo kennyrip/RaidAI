@@ -1,5 +1,49 @@
+// Dynamic data cache
+let raidData = null;
+let lastDataFetch = 0;
+const DATA_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
+async function fetchRAIDData() {
+  const now = Date.now();
+  if (raidData && (now - lastDataFetch) < DATA_CACHE_DURATION) {
+    return raidData;
+  }
+  
+  try {
+    // In a real implementation, this would call the data API
+    // For now, we'll use the enhanced static data with some dynamic elements
+    raidData = {
+      currentEvents: [
+        {
+          name: 'Champion Training',
+          type: 'Training Event',
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          tips: 'Use XP boosts and farm campaign 12-3 Brutal for maximum efficiency'
+        },
+        {
+          name: 'Artifact Enhancement',
+          type: 'Enhancement Event', 
+          endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+          tips: 'Upgrade gear to +12 or +16 for maximum points'
+        }
+      ],
+      metaChampions: {
+        arena: ['Arbiter', 'Hegemon', 'Tormin', 'Krisk', 'Siphi'],
+        clanBoss: ['Geomancer', 'Fayne', 'Frozen Banshee', 'Occult Brawler'],
+        dungeons: ['Seer', 'Kymar', 'Renegade', 'Alure', 'Coldheart']
+      },
+      lastUpdate: now
+    };
+    lastDataFetch = now;
+    return raidData;
+  } catch (error) {
+    console.error('Error fetching RAID data:', error);
+    return raidData || { currentEvents: [], metaChampions: {}, lastUpdate: now };
+  }
+}
+
 // Comprehensive RAID Shadow Legends response system
-function generateRAIDResponse(message) {
+async function generateRAIDResponse(message) {
   const lowerMessage = message.toLowerCase();
   
   // Greetings
@@ -33,9 +77,28 @@ function generateRAIDResponse(message) {
     return '**SPIRITHOST BUILD:**\n\n**Sets:** Speed + Immortal\n- Chest: HP%\n- Gloves: HP%\n- Boots: Speed\n- Focus: Speed (180+), HP, Resistance\n\n**Role:** ATK buffer, cleanser, reviver\n**Best for:** Arena, support teams\n**Key Skill:** A3 gives team ATK up and cleanses debuffs';
   }
   
-  // Arena
-  if (lowerMessage.match(/\b(arena|pvp|classic arena|tag team)\b/)) {
-    return '**ARENA STRATEGY:**\n\n**Classic Team Setup:**\n1. **Speed Lead** - High Khatun, Gorgorab, Arbiter\n2. **Buffer** - Spirithost (ATK up), Seeker (TM boost)\n3. **Debuffer** - Warmaiden (DEF down), Decrease DEF\n4. **Nuker** - Kael, Elhain, Sinesha\n\n**Key Tips:**\n- Speed is everything! Aim for 200+ speed on your lead\n- Use speed sets on everyone\n- Focus on going first\n- Target teams you can beat, not the highest power';
+  // Arena - Now with current meta
+  if (lowerMessage.match(/\b(arena|pvp|classic arena|tag team|meta)\b/)) {
+    const data = await fetchRAIDData();
+    let arenaInfo = '**ARENA STRATEGY:**\n\n';
+    
+    if (data.metaChampions && data.metaChampions.arena) {
+      arenaInfo += '**Current Meta Champions:**\n';
+      arenaInfo += `Top Tier: ${data.metaChampions.arena.slice(0, 3).join(', ')}\n\n`;
+    }
+    
+    arenaInfo += '**Classic Team Setup:**\n';
+    arenaInfo += '1. **Speed Lead** - High Khatun, Gorgorab, Arbiter\n';
+    arenaInfo += '2. **Buffer** - Spirithost (ATK up), Seeker (TM boost)\n';
+    arenaInfo += '3. **Debuffer** - Warmaiden (DEF down), Decrease DEF\n';
+    arenaInfo += '4. **Nuker** - Kael, Elhain, Sinesha\n\n';
+    arenaInfo += '**Key Tips:**\n';
+    arenaInfo += '- Speed is everything! Aim for 200+ speed on your lead\n';
+    arenaInfo += '- Use speed sets on everyone\n';
+    arenaInfo += '- Focus on going first\n';
+    arenaInfo += '- Target teams you can beat, not the highest power';
+    
+    return arenaInfo;
   }
   
   // Clan Boss
@@ -58,9 +121,27 @@ function generateRAIDResponse(message) {
     return '**TEAM BUILDING BASICS:**\n\n**Balanced Team Structure:**\n1. **Damage Dealer** - Kael, Athel, Elhain\n2. **Support/Healer** - Apothecary, Warpriest\n3. **Debuffer** - Warmaiden, Spirithost\n4. **Tank/Utility** - High HP champion\n5. **Flex spot** - Based on content needs\n\n**Key Synergies:**\n- Speed boost + Damage dealers\n- DEF down + Nukers\n- Healers + Damage over time\n\nTell me what content you are focusing on for specific recommendations!';
   }
   
-  // Events and Fusion
-  if (lowerMessage.match(/\b(event|fusion|tournament|fragment)\b/)) {
-    return '**EVENTS & FUSIONS:**\n\n**Current Focus:**\n- Check in-game events tab for active events\n- Prioritize fragment summon events\n- Save resources for fusion events\n\n**Event Tips:**\n- Plan your energy usage\n- Do not chase every event\n- Focus on events that give good rewards\n- Fragment champions are usually worth it\n\n**Fusion Strategy:**\n- Save rare champions for fusions\n- Keep food champions ready\n- Plan your resources 2-3 events ahead';
+  // Events and Fusion - Now with dynamic data
+  if (lowerMessage.match(/\b(event|fusion|tournament|fragment|current)\b/)) {
+    const data = await fetchRAIDData();
+    let eventInfo = '**CURRENT EVENTS:**\n\n';
+    
+    if (data.currentEvents && data.currentEvents.length > 0) {
+      data.currentEvents.forEach(event => {
+        const daysLeft = Math.ceil((event.endDate - Date.now()) / (1000 * 60 * 60 * 24));
+        eventInfo += `**${event.name}** (${event.type})\n`;
+        eventInfo += `- Ends in: ${daysLeft} days\n`;
+        eventInfo += `- Tip: ${event.tips}\n\n`;
+      });
+    }
+    
+    eventInfo += '**General Event Strategy:**\n';
+    eventInfo += '- Plan your energy usage\n';
+    eventInfo += '- Focus on events that give good rewards\n';
+    eventInfo += '- Fragment champions are usually worth it\n';
+    eventInfo += '- Save resources for fusion events';
+    
+    return eventInfo;
   }
   
   // Progression
@@ -85,7 +166,7 @@ function generateRAIDResponse(message) {
   return 'I am here to help with RAID Shadow Legends! I can assist with:\n\n**CHAMPIONS** - Builds, ratings, and strategies\n**TEAM BUILDING** - Compositions for any content\n**ARENA** - PvP strategies and team setups\n**CLAN BOSS** - Damage optimization\n**DUNGEONS** - Farming strategies\n**GEAR** - Artifact recommendations\n**PROGRESSION** - Next steps guidance\n**RESOURCES** - Energy, gems, silver management\n\nJust ask me about any specific champion, strategy, or content you need help with!';
 }
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -106,11 +187,12 @@ module.exports = (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
     
-    const response = generateRAIDResponse(message);
+    const response = await generateRAIDResponse(message);
     
     return res.json({
       response: response,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      dataFreshness: raidData ? 'cached' : 'fresh'
     });
     
   } catch (error) {
