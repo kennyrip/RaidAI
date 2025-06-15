@@ -1,35 +1,3 @@
 {
-  "version": 2,
-  "functions": {
-    "index.js": {
-      "runtime": "@vercel/node"
-    },
-    "api/chat.js": {
-      "runtime": "@vercel/node"
-    },
-    "api/embed.js": {
-      "runtime": "@vercel/node"
-    }
-  },
-  "routes": [
-    {
-      "src": "/api/chat",
-      "dest": "/api/chat.js"
-    },
-    {
-      "src": "/api/embed",
-      "dest": "/api/embed.js"
-    },
-    {
-      "src": "/embed.js",
-      "dest": "/api/embed.js"
-    },
-    {
-      "src": "/",
-      "dest": "/index.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "version": 2
 }
