@@ -1,5 +1,6 @@
 export default function handler(req, res) {
-  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache');
   
   const html = `
 <!DOCTYPE html>
@@ -70,5 +71,5 @@ export default function handler(req, res) {
 </html>
   `;
   
-  res.send(html);
+  res.status(200).end(html);
 }

@@ -1,6 +1,7 @@
 export default function handler(req, res) {
-  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
   
   const embedScript = `
 (function() {
@@ -124,5 +125,5 @@ export default function handler(req, res) {
 })();
   `;
   
-  res.send(embedScript);
+  res.status(200).end(embedScript);
 }
