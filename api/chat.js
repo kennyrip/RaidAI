@@ -61,24 +61,51 @@ Provide helpful, accurate, and detailed responses about RAID Shadow Legends. Be 
 
     const fullPrompt = `${systemPrompt}\n\nUser: ${message}\nAssistant:`;
 
-    if (provider === 'huggingface') {
-      const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
-        method: 'POST',
+    const axios = require('axios');
+
+    if (provider === 'gemini') {
+      // Google Gemini API
+      const response = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        {
+          contents: [{
+            parts: [{ text: fullPrompt }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 500
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: 30000
+        }
+      );
+
+      if (response.data.candidates && response.data.candidates[0]) {
+        const text = response.data.candidates[0].content.parts[0].text;
+        return text.trim();
+      }
+    } else if (provider === 'huggingface') {
+      // Hugging Face API
+      const response = await axios.post('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
+        inputs: fullPrompt,
+        parameters: {
+          max_length: 500,
+          temperature: 0.7,
+          do_sample: true
+        }
+      }, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          inputs: fullPrompt,
-          parameters: {
-            max_length: 500,
-            temperature: 0.7,
-            do_sample: true
-          }
-        })
+        timeout: 30000
       });
 
-      const data = await response.json();
+      const data = response.data;
       if (data && data[0] && data[0].generated_text) {
         let text = data[0].generated_text;
         const assistantIndex = text.lastIndexOf('Assistant:');
@@ -87,6 +114,44 @@ Provide helpful, accurate, and detailed responses about RAID Shadow Legends. Be 
         }
         return text;
       }
+    } else if (provider === 'groq') {
+      // Groq API
+      const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+        model: 'mixtral-8x7b-32768',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      });
+
+      return response.data.choices[0].message.content;
+    } else if (provider === 'openai') {
+      // OpenAI API
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      });
+
+      return response.data.choices[0].message.content;
     }
     
     return null;

@@ -4,22 +4,11 @@
   "description": "RAID Shadow Legends AI Chat Assistant with real-time data scraping",
   "scripts": {
     "build": "echo 'No build step required for Vercel'",
-    "dev": "vercel dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vercel dev"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "compression": "^1.7.4",
-    "dotenv": "^16.3.1",
-    "axios": "^1.5.0",
-    "rate-limiter-flexible": "^3.0.8",
-    "cheerio": "^1.0.0-rc.12",
-    "node-cron": "^3.0.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12"
   },
   "keywords": [
     "raid",
@@ -32,6 +21,6 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=16.0.0"
+    "node": "18.x"
   }
 }
