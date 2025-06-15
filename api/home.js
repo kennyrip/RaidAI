@@ -1,0 +1,75 @@
+module.exports = (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache');
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RAID AI Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .status { background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .endpoint { background: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; }
+        .embed-code { background: #1e1e1e; color: #fff; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>RAID AI Chat</h1>
+    
+    <div class="status">
+        <h3>Status: Running</h3>
+        <p>Your RAID Shadow Legends AI Chat is working!</p>
+    </div>
+    
+    <h3>API Endpoints:</h3>
+    <div class="endpoint">POST /api/chat - Chat with AI</div>
+    <div class="endpoint">GET /api/embed - Embed script</div>
+    
+    <h3>Embed Code:</h3>
+    <div class="embed-code">
+        &lt;script src="${req.headers.host ? `https://${req.headers.host}` : ''}/api/embed"&gt;&lt;/script&gt;
+    </div>
+    
+    <h3>Test Chat:</h3>
+    <div id="test-area">
+        <input type="text" id="test-input" placeholder="Ask about RAID..." style="width: 70%; padding: 10px;">
+        <button onclick="testChat()" style="padding: 10px;">Send</button>
+        <div id="test-result" style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 4px; display: none;"></div>
+    </div>
+    
+    <script>
+        async function testChat() {
+            const input = document.getElementById('test-input');
+            const result = document.getElementById('test-result');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            result.style.display = 'block';
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = '<strong>AI Response:</strong><br>' + (data.response || 'Error: ' + JSON.stringify(data));
+            } catch (error) {
+                result.innerHTML = '<strong>Error:</strong> ' + error.message;
+            }
+        }
+        
+        document.getElementById('test-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') testChat();
+        });
+    </script>
+</body>
+</html>
+  `;
+  
+  res.status(200).end(html);
+};

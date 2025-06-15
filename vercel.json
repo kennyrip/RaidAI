@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/api/home"
+    },
+    {
+      "src": "/api/chat",
+      "dest": "/api/chat"
+    },
+    {
+      "src": "/api/embed",
+      "dest": "/api/embed"
+    },
+    {
+      "src": "/embed.js",
+      "dest": "/api/embed"
+    }
+  ]
+}
