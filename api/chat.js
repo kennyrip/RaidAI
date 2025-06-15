@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+export default function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     const lowerMessage = message.toLowerCase();
     let response = '';
     
-    // Simple responses
+    // Simple RAID responses
     if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
       response = 'Hello! I am your RAID Shadow Legends AI assistant. Ask me about champions, team builds, or strategies!';
     }
@@ -37,6 +37,9 @@ export default async function handler(req, res) {
     }
     else if (lowerMessage.includes('clan boss')) {
       response = 'Clan boss needs: Decrease Attack, Poison damage, Heal, and survivability. Use Lifesteal sets and focus on accuracy!';
+    }
+    else if (lowerMessage.includes('team') || lowerMessage.includes('build')) {
+      response = 'Good starter team: Kael (damage), Apothecary (speed/heal), Warmaiden (defense down), Spirithost (attack up), and a tank.';
     }
     else {
       response = 'I can help with RAID Shadow Legends! Ask me about champions like Kael, team building, arena strategies, or clan boss tips.';
