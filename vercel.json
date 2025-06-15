@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/embed.js",
+      "destination": "/api/embed"
+    }
+  ]
+}
