@@ -42,6 +42,60 @@ async function fetchRAIDData() {
   }
 }
 
+// AI Service integration
+async function callAIService(message, context) {
+  const apiKey = process.env.AI_API_KEY;
+  const provider = process.env.AI_PROVIDER || 'huggingface';
+  
+  if (!apiKey) {
+    console.log('No AI API key found, using fallback responses');
+    return null;
+  }
+
+  try {
+    const systemPrompt = `You are a RAID Shadow Legends expert AI assistant. You have deep knowledge about champions, builds, team compositions, arena strategies, clan boss optimization, dungeon farming, current events, and resource management. 
+
+Current game data: ${context}
+
+Provide helpful, accurate, and detailed responses about RAID Shadow Legends. Be friendly and enthusiastic.`;
+
+    const fullPrompt = `${systemPrompt}\n\nUser: ${message}\nAssistant:`;
+
+    if (provider === 'huggingface') {
+      const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          inputs: fullPrompt,
+          parameters: {
+            max_length: 500,
+            temperature: 0.7,
+            do_sample: true
+          }
+        })
+      });
+
+      const data = await response.json();
+      if (data && data[0] && data[0].generated_text) {
+        let text = data[0].generated_text;
+        const assistantIndex = text.lastIndexOf('Assistant:');
+        if (assistantIndex !== -1) {
+          text = text.substring(assistantIndex + 10).trim();
+        }
+        return text;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('AI Service error:', error);
+    return null;
+  }
+}
+
 // Comprehensive RAID Shadow Legends response system
 async function generateRAIDResponse(message) {
   const lowerMessage = message.toLowerCase();
@@ -187,12 +241,22 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
     
-    const response = await generateRAIDResponse(message);
+    // Get current RAID data for context
+    const data = await fetchRAIDData();
+    const context = JSON.stringify(data).substring(0, 1000); // Limit context size
+    
+    // Try AI service first, fallback to rule-based responses
+    let response = await callAIService(message, context);
+    
+    if (!response) {
+      response = await generateRAIDResponse(message);
+    }
     
     return res.json({
       response: response,
       timestamp: new Date().toISOString(),
-      dataFreshness: raidData ? 'cached' : 'fresh'
+      dataFreshness: raidData ? 'cached' : 'fresh',
+      aiUsed: !!process.env.AI_API_KEY
     });
     
   } catch (error) {
