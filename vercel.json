@@ -1,8 +1,14 @@
 {
+  "buildCommand": "",
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/embed.js",
       "destination": "/api/embed"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
     }
   ]
 }
