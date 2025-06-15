@@ -1,5 +1,4 @@
-// Vercel serverless function for embed script
-export default function handler(req, res) {
+module.exports = (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
   res.setHeader('Access-Control-Allow-Origin', '*');
   
@@ -27,7 +26,7 @@ export default function handler(req, res) {
         
         <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8f9fa;">
           <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 14px;">
-            Hi! I'm your RAID Shadow Legends AI assistant. Ask me about champions, team builds, or strategies!
+            Hi! I am your RAID Shadow Legends AI assistant. Ask me about champions, team builds, or strategies!
           </div>
         </div>
         
@@ -123,4 +122,4 @@ export default function handler(req, res) {
   `;
   
   res.send(embedScript);
-}
+};
